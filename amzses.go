@@ -1,3 +1,11 @@
+// Copyright 2011 Numrotron Inc.
+// Use of this source code is governed by an MIT-style license
+// that can be found in the LICENSE file.
+//
+// Developed at www.stathat.com by Patrick Crosby
+// Contact us on twitter with any questions:  twitter.com/stat_hat
+
+// amzses is a Go package to send emails using Amazon's Simple Email Service.
 package amzses
 
 import (
