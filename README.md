@@ -6,9 +6,9 @@ This is a Go package to send emails using Amazon's Simple Email Service.
 Installation
 ------------
 
-Use `goinstall`:
+Use `go install`:
 
-    goinstall github.com/stathat/amzses
+    go install github.com/stathat/amzses
 
 If you are building your code with `goinstall`, you can skip the previous step and just
 import `amzses` as follows:
@@ -17,7 +17,7 @@ import `amzses` as follows:
             "github.com/stathat/amzses"
     )
 
-Using `goinstall` will automatically install its one external dependency,
+Using `go install` will automatically install its one external dependency,
 [jconfig](http://www.stathat.com/src/jconfig).
 
 Usage
