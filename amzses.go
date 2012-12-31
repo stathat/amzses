@@ -1,4 +1,4 @@
-// Copyright 2011 Numrotron Inc.
+// Copyright 2011-2013 Numrotron Inc.
 // Use of this source code is governed by an MIT-style license
 // that can be found in the LICENSE file.
 //
@@ -41,6 +41,19 @@ func SendMail(from, to, subject, body string) (string, error) {
 	data.Add("Destination.ToAddresses.member.1", to)
 	data.Add("Message.Subject.Data", subject)
 	data.Add("Message.Body.Text.Data", body)
+	data.Add("AWSAccessKeyId", accessKey)
+
+	return sesGet(data)
+}
+
+func SendMailHTML(from, to, subject, bodyText, bodyHTML string) (string, error) {
+	data := make(url.Values)
+	data.Add("Action", "SendEmail")
+	data.Add("Source", from)
+	data.Add("Destination.ToAddresses.member.1", to)
+	data.Add("Message.Subject.Data", subject)
+	data.Add("Message.Body.Text.Data", bodyText)
+	data.Add("Message.Body.Html.Data", bodyHTML)
 	data.Add("AWSAccessKeyId", accessKey)
 
 	return sesGet(data)
