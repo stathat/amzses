@@ -113,17 +113,17 @@ func sesGet(data url.Values) (string, error) {
 }
 
 func sesPost(data url.Values) (string, error) {
-        body := strings.NewReader(data.Encode())
-        req, err := http.NewRequest("POST", endpoint, body)
-        if err != nil {
-                return "", err
-        }
-        req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	body := strings.NewReader(data.Encode())
+	req, err := http.NewRequest("POST", endpoint, body)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	now := time.Now().UTC()
 	// date format: "Tue, 25 May 2010 21:20:27 +0000"
 	date := now.Format("Mon, 02 Jan 2006 15:04:05 -0700")
-        req.Header.Set("Date", date)
+	req.Header.Set("Date", date)
 
 	h := hmac.New(sha256.New, []uint8(secretKey))
 	h.Write([]uint8(date))
@@ -144,7 +144,7 @@ func sesPost(data url.Values) (string, error) {
 		log.Printf("error, status = %d", r.StatusCode)
 
 		log.Printf("error response: %s", resultbody)
-                return "", errors.New(fmt.Sprintf("error code %d. response: %s", r.StatusCode, resultbody))
+		return "", errors.New(fmt.Sprintf("error code %d. response: %s", r.StatusCode, resultbody))
 	}
 
 	return string(resultbody), nil
