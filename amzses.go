@@ -26,26 +26,29 @@ const (
 	endpoint = "https://email.us-east-1.amazonaws.com"
 )
 
-var accessKey, secretKey string
-
-func Init(sesAccessKey, sesSecretKey string) {
-	accessKey = sesAccessKey
-	secretKey = sesSecretKey
+type Client struct {
+	accessKey string
+	secretKey string
 }
 
-func SendMail(from, to, subject, body string) (string, error) {
+func NewClient(sesAccessKey, sesSecretKey string) *Client {
+	client := &Client{accessKey: sesAccessKey, secretKey: sesSecretKey}
+	return client
+}
+
+func (c *Client) SendMail(from, to, subject, body string) (string, error) {
 	data := make(url.Values)
 	data.Add("Action", "SendEmail")
 	data.Add("Source", from)
 	data.Add("Destination.ToAddresses.member.1", to)
 	data.Add("Message.Subject.Data", subject)
 	data.Add("Message.Body.Text.Data", body)
-	data.Add("AWSAccessKeyId", accessKey)
+	data.Add("AWSAccessKeyId", c.accessKey)
 
-	return sesPost(data)
+	return c.sesPost(data)
 }
 
-func SendMailHTML(from, to, subject, bodyText, bodyHTML string) (string, error) {
+func (c *Client) SendMailHTML(from, to, subject, bodyText, bodyHTML string) (string, error) {
 	data := make(url.Values)
 	data.Add("Action", "SendEmail")
 	data.Add("Source", from)
@@ -53,20 +56,20 @@ func SendMailHTML(from, to, subject, bodyText, bodyHTML string) (string, error) 
 	data.Add("Message.Subject.Data", subject)
 	data.Add("Message.Body.Text.Data", bodyText)
 	data.Add("Message.Body.Html.Data", bodyHTML)
-	data.Add("AWSAccessKeyId", accessKey)
+	data.Add("AWSAccessKeyId", c.accessKey)
 
-	return sesPost(data)
+	return c.sesPost(data)
 }
 
-func authorizationHeader(date string) []string {
-	h := hmac.New(sha256.New, []uint8(secretKey))
+func (c *Client) authorizationHeader(date string) []string {
+	h := hmac.New(sha256.New, []uint8(c.secretKey))
 	h.Write([]uint8(date))
 	signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	auth := fmt.Sprintf("AWS3-HTTPS AWSAccessKeyId=%s, Algorithm=HmacSHA256, Signature=%s", accessKey, signature)
+	auth := fmt.Sprintf("AWS3-HTTPS AWSAccessKeyId=%s, Algorithm=HmacSHA256, Signature=%s", c.accessKey, signature)
 	return []string{auth}
 }
 
-func sesGet(data url.Values) (string, error) {
+func (c *Client) sesGet(data url.Values) (string, error) {
 	urlstr := fmt.Sprintf("%s?%s", endpoint, data.Encode())
 	endpointURL, _ := url.Parse(urlstr)
 	headers := map[string][]string{}
@@ -76,10 +79,10 @@ func sesGet(data url.Values) (string, error) {
 	date := now.Format("Mon, 02 Jan 2006 15:04:05 -0700")
 	headers["Date"] = []string{date}
 
-	h := hmac.New(sha256.New, []uint8(secretKey))
+	h := hmac.New(sha256.New, []uint8(c.secretKey))
 	h.Write([]uint8(date))
 	signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	auth := fmt.Sprintf("AWS3-HTTPS AWSAccessKeyId=%s, Algorithm=HmacSHA256, Signature=%s", accessKey, signature)
+	auth := fmt.Sprintf("AWS3-HTTPS AWSAccessKeyId=%s, Algorithm=HmacSHA256, Signature=%s", c.accessKey, signature)
 	headers["X-Amzn-Authorization"] = []string{auth}
 
 	req := http.Request{
@@ -110,7 +113,7 @@ func sesGet(data url.Values) (string, error) {
 	return string(resultbody), nil
 }
 
-func sesPost(data url.Values) (string, error) {
+func (c *Client) sesPost(data url.Values) (string, error) {
 	body := strings.NewReader(data.Encode())
 	req, err := http.NewRequest("POST", endpoint, body)
 	if err != nil {
@@ -123,10 +126,10 @@ func sesPost(data url.Values) (string, error) {
 	date := now.Format("Mon, 02 Jan 2006 15:04:05 -0700")
 	req.Header.Set("Date", date)
 
-	h := hmac.New(sha256.New, []uint8(secretKey))
+	h := hmac.New(sha256.New, []uint8(c.secretKey))
 	h.Write([]uint8(date))
 	signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	auth := fmt.Sprintf("AWS3-HTTPS AWSAccessKeyId=%s, Algorithm=HmacSHA256, Signature=%s", accessKey, signature)
+	auth := fmt.Sprintf("AWS3-HTTPS AWSAccessKeyId=%s, Algorithm=HmacSHA256, Signature=%s", c.accessKey, signature)
 	req.Header.Set("X-Amzn-Authorization", auth)
 
 	r, err := http.DefaultClient.Do(req)
