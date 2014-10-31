@@ -14,7 +14,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/stathat/jconfig"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,10 +28,9 @@ const (
 
 var accessKey, secretKey string
 
-func init() {
-	config := jconfig.LoadConfig("/etc/aws.conf")
-	accessKey = config.GetString("aws_access_key")
-	secretKey = config.GetString("aws_secret_key")
+func Init(sesAccessKey, sesSecretKey string) {
+	accessKey = sesAccessKey
+	secretKey = sesSecretKey
 }
 
 func SendMail(from, to, subject, body string) (string, error) {
