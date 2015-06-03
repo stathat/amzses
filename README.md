@@ -6,24 +6,23 @@ This is a Go package to send emails using Amazon's Simple Email Service.
 Installation
 ------------
 
-Use `go install`:
+Use `go get`:
 
-    go install github.com/stathat/amzses
+    go get stathat.com/c/amzses
 
-If you are building your code with `goinstall`, you can skip the previous step and just
-import `amzses` as follows:
+Then
 
     import (
-            "github.com/stathat/amzses"
+            "stathat.com/c/amzses"
     )
 
-Using `go install` will automatically install its one external dependency,
-[jconfig](http://www.stathat.com/src/jconfig).
+Using `go get` will automatically install its one external dependency,
+[jconfig](http://www.stathat.com/c/jconfig).
 
 Usage
 -----
 
-Examples available at [www.stathat.com/src/amzses](http://www.stathat.com/src/amzses).
+Examples available at [www.stathat.com/c/amzses](http://www.stathat.com/c/amzses).
 
 Status
 ------
@@ -37,9 +36,9 @@ We only implemented the parts of the API that we are using, so this only sends t
 Contact us
 ----------
 
-We'd love to hear from you if you are using `amzses`!  We're on twitter: [@stat_hat](http://twitter.com/stat_hat) or [contact us here](http://www.stathat.com/docs/contact).
+We'd love to hear from you if you are using `amzses`!  We're on twitter: [@stathat](http://twitter.com/stathat) or [contact us here](http://www.stathat.com/docs/contact).
 
 About
 -----
 
-Written by Patrick Crosby at [StatHat](http://www.stathat.com).  Twitter:  [@stat_hat](http://twitter.com/stat_hat)
+Written by Patrick Crosby at [StatHat](http://www.stathat.com).  Twitter:  [@stathat](http://twitter.com/stathat)
