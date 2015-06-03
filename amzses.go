@@ -6,7 +6,7 @@
 // Contact us on twitter with any questions:  twitter.com/stat_hat
 
 // amzses is a Go package to send emails using Amazon's Simple Email Service.
-package amzses
+package amzses // import "stathat.com/c/amzses"
 
 import (
 	"crypto/hmac"
@@ -14,13 +14,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/stathat/jconfig"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"stathat.com/c/jconfig"
 )
 
 const (
