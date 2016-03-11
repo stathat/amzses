@@ -18,6 +18,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -31,9 +32,18 @@ const (
 var accessKey, secretKey string
 
 func init() {
-	config := jconfig.LoadConfig("/etc/aws.conf")
-	accessKey = config.GetString("aws_access_key")
-	secretKey = config.GetString("aws_secret_key")
+	accessKey = os.Getenv("AWS_SES_ACCESS_KEY")
+	secretKey = os.Getenv("AWS_SES_SECRET_KEY")
+
+	if accessKey == "" || secretKey == "" {
+		config := jconfig.LoadConfig("/etc/aws.conf")
+		if accessKey == "" {
+			accessKey = config.GetString("aws_access_key")
+		}
+		if secretKey == "" {
+			secretKey = config.GetString("aws_secret_key")
+		}
+	}
 }
 
 func SendMail(from, to, subject, body string) (string, error) {
