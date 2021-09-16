@@ -6,7 +6,7 @@
 // Contact us on twitter with any questions:  twitter.com/stat_hat
 
 // amzses is a Go package to send emails using Amazon's Simple Email Service.
-package amzses // import "stathat.com/c/amzses"
+package amzses
 
 import (
 	"crypto/hmac"
@@ -18,11 +18,16 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
-	"stathat.com/c/jconfig"
+	"github.com/stathat/jconfig"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ses"
 )
 
 const (
@@ -32,21 +37,91 @@ const (
 var accessKey, secretKey string
 
 func init() {
-	accessKey = os.Getenv("AWS_SES_ACCESS_KEY")
-	secretKey = os.Getenv("AWS_SES_SECRET_KEY")
+	config := jconfig.LoadConfig("/etc/aws.conf")
+	accessKey = config.GetString("aws_access_key")
+	secretKey = config.GetString("aws_secret_key")
+}
 
-	if accessKey == "" || secretKey == "" {
-		config := jconfig.LoadConfig("/etc/aws.conf")
-		if accessKey == "" {
-			accessKey = config.GetString("aws_access_key")
-		}
-		if secretKey == "" {
-			secretKey = config.GetString("aws_secret_key")
+const (
+	CharSet = "UTF-8"
+)
+
+func sendMail(from, to, subject, bodyText, bodyHTML string) (string, error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String("us-east-1"),
+		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	svc := ses.New(sess)
+
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			CcAddresses: []*string{},
+			ToAddresses: []*string{
+				aws.String(to),
+			},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Text: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(bodyText),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(CharSet),
+				Data:    aws.String(subject),
+			},
+		},
+		Source: aws.String(from),
+	}
+	if bodyHTML != "" {
+		input.Message.Body.Html = &ses.Content{
+			Charset: aws.String(CharSet),
+			Data:    aws.String(bodyHTML),
 		}
 	}
+
+	result, err := svc.SendEmail(input)
+
+	// Display error messages if they occur.
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case ses.ErrCodeMessageRejected:
+				fmt.Println(ses.ErrCodeMessageRejected, aerr.Error())
+			case ses.ErrCodeMailFromDomainNotVerifiedException:
+				fmt.Println(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
+			case ses.ErrCodeConfigurationSetDoesNotExistException:
+				fmt.Println(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+
+		return "", err
+	}
+
+	return result.String(), nil
 }
 
 func SendMail(from, to, subject, body string) (string, error) {
+	return sendMail(from, to, subject, body, "")
+}
+
+func SendMailHTML(from, to, subject, bodyText, bodyHTML string) (string, error) {
+	return sendMail(from, to, subject, bodyText, bodyHTML)
+}
+
+// SendMailOld is the original, which uses the now banned v3 sig.
+func SendMailOld(from, to, subject, body string) (string, error) {
 	data := make(url.Values)
 	data.Add("Action", "SendEmail")
 	data.Add("Source", from)
@@ -58,7 +133,7 @@ func SendMail(from, to, subject, body string) (string, error) {
 	return sesPost(data)
 }
 
-func SendMailHTML(from, to, subject, bodyText, bodyHTML string) (string, error) {
+func SendMailHTMLOld(from, to, subject, bodyText, bodyHTML string) (string, error) {
 	data := make(url.Values)
 	data.Add("Action", "SendEmail")
 	data.Add("Source", from)
